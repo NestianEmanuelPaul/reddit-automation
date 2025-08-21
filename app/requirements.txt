@@ -1,0 +1,10 @@
+fastapi
+uvicorn[standard]
+pydantic
+httpx
+python-dotenv
+requests
+beautifulsoup4
+requests[socks]
+redis
+cryptography
