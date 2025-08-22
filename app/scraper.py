@@ -3,10 +3,11 @@ import asyncio
 from app.services.auth_service import reddit_login
 from app.services.parsing_service import get_recent_users
 from app.services.storage_service import upsert_username_list
-from settings import REDDIT_USERNAME, REDDIT_PASSWORD, HF_API_KEY
+from app.utils.logger import logger
+# from settings import REDDIT_USER, REDDIT_PASS, HF_API_KEY
 
-USERNAME = REDDIT_USERNAME
-PASSWORD = REDDIT_PASSWORD
+USERNAME = "daniellikescoffee123"
+PASSWORD = "RNeixv617fjv6nJ*Yfc+q3k!3R"
 
 async def main():
     print("[INFO] Pornim procesul de login...")
@@ -60,17 +61,25 @@ def collect_new_users(max_users=100):
     return users_data
 
 def enrich_with_activity(users_data):
+    # logger.info(f"📋 enrich_with_activity {users_data}")
     now = time.time()
     for username in list(users_data.keys()):
         url = f"{BASE_URL}/user/{username}/comments/.json?limit=3"
+        logger.info(f"📋 enrich_with_activity {url}")
         try:
-            r = requests.get(url, headers=HEADERS)
+            r = requests.get(url, headers=HEADERS, timeout=10)
             r.raise_for_status()
-            comments = r.json()["data"]["children"]
+            # logger.info(f"📋 enrich_with_activity {r}")
+
+            data = r.json()
+            comments = data.get("data", {}).get("children", [])
+            # logger.info(f"📋 enrich_with_activity {comments}")
 
             recent_comments = []
             is_online_flag = False
+
             for c in comments:
+                # logger.info(f"📋 enrich_with_activity {c}")
                 created = c["data"].get("created_utc", 0)
                 recent_comments.append({
                     "body": c["data"].get("body"),
@@ -82,9 +91,18 @@ def enrich_with_activity(users_data):
 
             users_data[username]["recent_comments"] = recent_comments
             users_data[username]["is_online"] = is_online_flag
-        except Exception:
+
+        except requests.exceptions.RequestException as e:
+            print(f"[WARN] Request failed for {username}: {e}")
+        except ValueError as e:
+            print(f"[WARN] JSON decode failed for {username}: {e}")
+        except Exception as e:
+            print(f"[ERROR] Unexpected error for {username}: {e}")
             continue
+        break
+
     return users_data
+
 
 if __name__ == "__main__":
     asyncio.run(main())

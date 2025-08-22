@@ -21,9 +21,9 @@ def env_required(key: str) -> str:
         raise RuntimeError(f"❌ Lipsă variabilă de mediu necesară: {key}")
     return value
 
-# 🔑 Credenziale Reddit
-REDDIT_USERNAME = env_required("REDDIT_USERNAME")
-REDDIT_PASSWORD = env_required("REDDIT_PASSWORD")
+""" # 🔑 Credenziale Reddit
+REDDIT_USER = env_required("REDDIT_USER")
+REDDIT_PASS = env_required("REDDIT_PASS")
 
 # 🔑 Credenziale Telegram chat bot
 TELEGRAM_CHAT_ID = env_required("TELEGRAM_CHAT_ID")
@@ -47,5 +47,6 @@ AI_MODEL_ID = os.getenv("AI_MODEL_ID", "mistralai/Mistral-7B-Instruct")
 # Debug info (opțional, doar local)
 if not os.getenv("SPACE_ID"):
     print("📦 Config încărcat din .env (mod local).")
-    print(f"🔹 User Reddit: {REDDIT_USERNAME}")
+    print(f"🔹 User Reddit: {REDDIT_USER}")
     print(f"🔹 Model AI: {AI_MODEL_ID}")
+ """

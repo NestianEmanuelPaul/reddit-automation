@@ -1,11 +1,11 @@
 from app.services.auth_service import reddit_login
 from app.services.parsing_service import get_recent_users
 from app.services.storage_service import upsert_username_list
-from settings import REDDIT_USERNAME, REDDIT_PASSWORD, HF_API_KEY
+# from settings import REDDIT_USER, REDDIT_PASS, HF_API_KEY
 
 
-USERNAME = REDDIT_USERNAME
-PASSWORD = REDDIT_PASSWORD  # parola de test
+USERNAME = "daniellikescoffee123"
+PASSWORD = "RNeixv617fjv6nJ*Yfc+q3k!3R"  # parola de test
 
 def separator(title):
     print("\n" + "=" * 60)

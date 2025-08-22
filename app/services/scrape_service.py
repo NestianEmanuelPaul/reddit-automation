@@ -14,10 +14,10 @@ async def scrape_user_profile(username: str, session):
 
     try:
         url = f"{BASE_URL}/user/{username}/about.json"
-        logger.info(f"🔍 Colectez date despre utilizator: {username}")
+        # logger.info(f"🔍 Colectez date despre utilizator: {username}")
 
         resp = await fetch_with_retry("GET", url, session=session)
-        logger.info(f"✅ Date preluate cu succes pentru {username} (status={resp.status_code})")
+        # logger.info(f"✅ Date preluate cu succes pentru {username} (status={resp.status_code})")
 
 
         return resp.json()
@@ -37,10 +37,10 @@ async def scrape_subreddit_about(subreddit: str, session):
 
     try:
         url = f"{BASE_URL}/r/{subreddit}/about.json"
-        logger.info(f"🔍 Colectez date despre subreddit: {subreddit}")
+        # logger.info(f"🔍 Colectez date despre subreddit: {subreddit}")
 
         resp = await fetch_with_retry("GET", url, session=session)
-        logger.info(f"✅ Date preluate cu succes pentru r/{subreddit} (status={resp.status_code})")
+        # logger.info(f"✅ Date preluate cu succes pentru r/{subreddit} (status={resp.status_code})")
 
         return resp.json()
 

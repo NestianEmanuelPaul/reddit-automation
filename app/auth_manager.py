@@ -4,13 +4,13 @@ import time
 import requests
 from playwright.sync_api import Page, BrowserContext
 from app.crypto_utils import encrypt_data, decrypt_data
-from settings import REDDIT_USERNAME, REDDIT_PASSWORD, CAPSOLVER_API_KEY
+# from settings import REDDIT_USER, REDDIT_PASS, CAPSOLVER_API_KEY
 
-CAPSOLVER_API_KEY = CAPSOLVER_API_KEY
+CAPSOLVER_API_KEY = "CAP-1BC9D110E8141475BB3809D4B6C6753B"
 LOGIN_URL = "https://www.reddit.com/login/?dest=https%3A%2F%2Fwww.reddit.com%2F"
 
-USERNAME = REDDIT_USERNAME
-PASSWORD = REDDIT_PASSWORD
+USERNAME = "daniellikescoffee123"
+PASSWORD = "RNeixv617fjv6nJ*Yfc+q3k!3R"
 COOKIES_FILE = "cookies.json"
 SESSION_FILE = "session_data.json"
 

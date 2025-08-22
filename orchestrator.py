@@ -6,13 +6,14 @@ from app.services.scrape_service import scrape_user_profile, scrape_subreddit_ab
 from app.services.storage_service import upsert_username_list, upsert_subreddit_info
 from app.utils.logger import logger
 from app.db.database import init_db
-from settings import REDDIT_USERNAME, REDDIT_PASSWORD, HF_API_KEY
+# from settings import REDDIT_USER, REDDIT_PASS, HF_API_KEY
+from app.ai_client import generate_message
 
 BASE_DIR = Path(__file__).resolve().parent
 CONFIG_FILE = BASE_DIR / "config.json"
 
-USERNAME = REDDIT_USERNAME
-PASSWORD = REDDIT_PASSWORD
+USERNAME = "daniellikescoffee123"
+PASSWORD = "RNeixv617fjv6nJ*Yfc+q3k!3R"
 
 async def run_orchestration():
     logger.info("🚀 Pornim orchestratorul Reddit")
@@ -42,10 +43,16 @@ async def run_orchestration():
     # Subreddits
     for sub in subreddits:
         sub_data = await scrape_subreddit_about(sub, session=session)
-        if sub_data:
-            upsert_subreddit_info(sub_data)
+        # if sub_data:
+            # upsert_subreddit_info(sub_data)
 
     logger.info("🏁 Orchestrator finalizat cu succes")
+
+""" def run_orchestration():
+    # Exemplu de context
+    context = "Clientul a dat feedback pozitiv despre ultima comandă."
+    sugestie = generate_message(context)
+    print("Mesaj generat:", sugestie) """
 
 if __name__ == "__main__":
     asyncio.run(run_orchestration())

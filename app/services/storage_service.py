@@ -21,7 +21,7 @@ def upsert_username_list(users_data: list[dict]):
         u.setdefault("avatar_url", None)
 
     session = SessionLocal()
-    logger.info(DB_URL)
+    # logger.info(DB_URL)
     try:
         for user in users_data:
             reddit_id = user["reddit_id"]
@@ -38,7 +38,7 @@ def upsert_username_list(users_data: list[dict]):
                     if hasattr(existing, field):
                         setattr(existing, field, value)
                 existing.last_scraped_at = datetime.utcnow()
-                logger.info(f"♻️ Update {existing.name} ({reddit_id})")
+                # logger.info(f"♻️ Update {existing.name} ({reddit_id})")
             else:
                 session.add(UserProfile(
                     reddit_id=reddit_id,
@@ -56,7 +56,7 @@ def upsert_username_list(users_data: list[dict]):
                     public_description=user.get("public_description"),
                     last_scraped_at=datetime.utcnow()
                 ))
-                logger.info(f"💾 Insert {user.get('name')} ({reddit_id})")
+                # logger.info(f"💾 Insert {user.get('name')} ({reddit_id})")
 
         session.commit()
         logger.info(f"✅ Upsert efectuat cu succes pentru {len(users_data)} utilizatori.")

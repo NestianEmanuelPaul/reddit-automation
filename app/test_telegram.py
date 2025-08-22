@@ -1,13 +1,13 @@
 import os
 import requests
 from dotenv import load_dotenv
-from settings import TELEGRAM_CHAT_ID, TELEGRAM_TOKEN
+# from settings import TELEGRAM_CHAT_ID, TELEGRAM_TOKEN
 
 # Încărcăm variabilele din .env
 load_dotenv()
 
-TOKEN = TELEGRAM_TOKEN
-CHAT_ID = TELEGRAM_CHAT_ID
+TOKEN = "8379653048:AAHfC4DasoTYiUsfdNa3CtWorRVKw0wMqQc"
+CHAT_ID = "5937988338"
 
 # Mesajul de test
 message = "Salut 👋! Acesta este un mesaj de test trimis prin Python."
