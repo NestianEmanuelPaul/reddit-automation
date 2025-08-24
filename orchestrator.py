@@ -10,6 +10,7 @@ from app.ai_client import generate_message
 from app.utils.proxy_manager import get_next_working_proxy, proxies_list
 import itertools
 import httpx
+from colorama import init, Fore, Style
 
 BASE_DIR = Path(__file__).resolve().parent
 CONFIG_FILE = BASE_DIR / "config.json"
@@ -20,7 +21,7 @@ PASSWORD = "RNeixv617fjv6nJ*Yfc+q3k!3R"
 async def login_and_get_cookies(proxy=None):
     """Face login și returnează cookies + headers, cu sau fără proxy."""
     if proxy:
-        logger.info(f"🌐 Login folosind proxy: {proxy}")
+        logger.info(f"⚠️ {Fore.GREEN}📋 Login folosind proxy: {proxy}{Style.RESET_ALL}")
         async with httpx.AsyncClient(proxy=proxy, timeout=30) as base_session:
             logged_in, _ = await reddit_login(USERNAME, PASSWORD, session=base_session)
             if not logged_in:
@@ -29,7 +30,7 @@ async def login_and_get_cookies(proxy=None):
             headers = base_session.headers.copy()
         return cookies, headers
     else:
-        logger.info("🌐 Login fără proxy")
+        logger.info(f"🌐 {Fore.RED}Login fără proxy{Style.RESET_ALL}")
         async with httpx.AsyncClient(timeout=30) as base_session:
             logged_in, _ = await reddit_login(USERNAME, PASSWORD, session=base_session)
             if not logged_in:
@@ -94,9 +95,10 @@ async def run_orchestration():
         login_proxy = await get_next_working_proxy()
 
     if not login_proxy:
-        logger.warning("⚠️ Niciun proxy funcțional — login fără proxy")
+        logger.warning(f"⚠️ {Fore.RED}📋 Niciun proxy funcțional — login fără proxy{Style.RESET_ALL}")
         cookies, headers = await login_and_get_cookies(proxy=None)
     else:
+        logger.info(f"⚠️ {Fore.GREEN}📋 Avem proxy funcțional — {login_proxy}{Style.RESET_ALL}")
         cookies, headers = await login_and_get_cookies(proxy=login_proxy)
 
     if not cookies:
@@ -111,7 +113,7 @@ async def run_orchestration():
         session = next(session_cycle)
         proxy_label = getattr(session, "proxy_url", None)
         if proxy_label:
-            logger.info(f"📋 [Scraping] Folosesc proxy: {proxy_label}")
+            logger.info(f"📋 {Fore.BLUE}[Scraping] Folosesc proxy: {proxy_label}{Style.RESET_ALL}")
         else:
             logger.info("📋 [Scraping] Fără proxy")
         user_data = await scrape_user_profile(user, session=session)
