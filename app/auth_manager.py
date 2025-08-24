@@ -37,57 +37,6 @@ def get_session():
     else:
         return login()
 
-# --- Rezolvare hCaptcha ---
-def solve_hcaptcha(site_key, url):
-    create_task_url = "https://api.capsolver.com/createTask"
-    get_result_url = "https://api.capsolver.com/getTaskResult"
-
-    payload = {
-        "clientKey": CAPSOLVER_API_KEY,
-        "task": {
-            "type": "HCaptchaTaskProxyless",
-            "websiteURL": url,
-            "websiteKey": site_key
-        }
-    }
-
-    print(f"[INFO] Creez task pentru sitekey={site_key} ...")
-    create_resp = requests.post(create_task_url, json=payload).json()
-    task_id = create_resp.get("taskId")
-    if not task_id:
-        raise RuntimeError(f"Eroare creare task: {create_resp}")
-
-    while True:
-        time.sleep(2)
-        resp = requests.post(get_result_url, json={"clientKey": CAPSOLVER_API_KEY, "taskId": task_id}).json()
-        if resp.get("status") == "ready":
-            return resp["solution"]["gRecaptchaResponse"]
-        elif resp.get("status") == "failed":
-            raise RuntimeError(f"Eroare rezolvare captcha: {resp}")
-
-# --- Detectare și rezolvare captcha ---
-def check_and_solve_captcha(page: Page):
-    try:
-        element = page.query_selector("iframe[src*='hcaptcha']")
-    except:
-        element = None
-
-    if element:
-        iframe_src = element.get_attribute("src")
-        if iframe_src and "sitekey=" in iframe_src:
-            site_key = iframe_src.split("sitekey=")[1].split("&")[0]
-            print(f"[INFO] Detectat hCaptcha: {site_key}")
-            token = solve_hcaptcha(site_key, LOGIN_URL)
-            print("[OK] Token primit, îl inserez în formular.")
-            page.evaluate("""
-                (token) => {
-                    let area = document.querySelector('textarea[name="h-captcha-response"]');
-                    if (area) { area.value = token; }
-                }
-            """, token)
-            return True
-    return False
-
 # --- Cookie-uri ---
 def save_cookies(context: BrowserContext):
     cookies = context.cookies()
@@ -138,8 +87,8 @@ def ensure_login(context: BrowserContext):
     page.goto(LOGIN_URL)
     page.wait_for_selector('input[name="username"]', timeout=15000)
 
-    if check_and_solve_captcha(page):
-        print("[INFO] hCaptcha rezolvat înainte de login.")
+    """ if check_and_solve_captcha(page):
+        print("[INFO] hCaptcha rezolvat înainte de login.") """
 
     # Tastăm cu delay mic pentru a simula input uman
     page.type('input[name="username"]', USERNAME, delay=100)

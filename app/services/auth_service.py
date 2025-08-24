@@ -5,6 +5,7 @@ import asyncio
 import requests
 from playwright.async_api import async_playwright, BrowserContext, Page
 from app.utils.logger import logger
+from colorama import Fore, Style
 
 CAPSOLVER_API_KEY = os.getenv("CAPSOLVER_API_KEY", "CAP-CHANGE-ME")
 LOGIN_URL = "https://www.reddit.com/login/?dest=https%3A%2F%2Fwww.reddit.com%2F"
@@ -84,13 +85,35 @@ async def _load_cookies(context: BrowserContext) -> bool:
         logger.warning(f"Nu am putut încărca cookie-urile: {e}")
         return False
 
-async def _cookies_are_valid(page: Page) -> bool:
-    await page.goto(HOME_URL)
+async def _cookies_are_valid(page):
+    """
+    Verifică dacă sesiunea este validă pe baza mai multor selectori alternativ.
+    Returnează True dacă găsește oricare dintre indicatorii de login.
+    """
     try:
-        await page.wait_for_selector("a[data-click-id='create_post']", timeout=5000)
-        logger.info("Sesiune validă – login nu este necesar.")
-        return True
-    except:
+        # Încărcăm pagina principală Reddit
+        await page.goto("https://www.reddit.com", wait_until="domcontentloaded", timeout=30000)
+
+        # Lista de selectori care indică o sesiune activă
+        login_indicators = [
+            "a[data-click-id='create_post']",   # butonul de creare postare
+            "a[href^='/user/']",                # link către profil
+            "header img[alt*='Avatar']"         # avatarul din header
+        ]
+
+        for selector in login_indicators:
+            try:
+                await page.wait_for_selector(selector, timeout=8000)
+                logger.info(f"✅ Sesiune validă — găsit indicator: {selector}")
+                return True
+            except:
+                logger.debug(f"❌ Selectorul {selector} nu a fost găsit încă.")
+
+        logger.warning("⚠️ Niciun indicator de login nu a fost găsit — sesiune invalidă.")
+        return False
+
+    except Exception as e:
+        logger.warning(f"⚠️ Eroare la verificarea sesiunii: {e}")
         return False
 
 async def _clear_cookies(context: BrowserContext) -> None:
@@ -123,12 +146,45 @@ async def reddit_login(username: str, password: str, session=None):
     async with async_playwright() as p:
         browser = await p.chromium.launch(headless=False, slow_mo=100)
         context = await browser.new_context()
+
+        # 🔹 Încercăm să încărcăm cookie-urile salvate
+        cookies_loaded = await _load_cookies(context)
         page = await context.new_page()
+
+        if cookies_loaded:
+            logger.info(f"🍪 {Fore.GREEN}Cookie-uri încărcate — verific sesiunea...{Style.RESET_ALL}")
+            if await _cookies_are_valid(page):
+                logger.info(f"✅ {Fore.GREEN}Sesiune validă — login nu este necesar.{Style.RESET_ALL}")
+                cookies = await context.cookies()
+                await browser.close()
+
+                if session is None:
+                    from httpx import AsyncClient
+                    session = AsyncClient()
+
+                for c in cookies:
+                    session.cookies.set(
+                        c['name'],
+                        c['value'],
+                        domain=c.get('domain'),
+                        path=c.get('path')
+                    )
+                return True, session
+            else:
+                logger.info(f"⚠️ {Fore.RED}Cookie-urile nu mai sunt valide — fac login nou.{Style.RESET_ALL}")
+                await _clear_cookies(context)
 
         logger.info("🌐 Navighez la pagina de login...")
         await page.goto("https://www.reddit.com/login", timeout=60000)
 
-        # 1. Acceptă cookie‑urile / consimțământul dacă apare
+        # 🔹 Detectează și rezolvă hCaptcha dacă apare
+        captcha_resolved = await _check_and_solve_captcha(page)
+        if captcha_resolved:
+            logger.info(f"✅ {Fore.BLUE}hCaptcha rezolvat automat.{Style.RESET_ALL}")
+        else:
+            logger.info(f"ℹ️ {Fore.BLUE}Nu a apărut hCaptcha la login.{Style.RESET_ALL}")
+
+        # 1. Acceptă cookie‑urile din browser / consimțământul dacă apare
         try:
             await page.wait_for_selector('button:has-text("Accept all")', timeout=5000)
             await page.click('button:has-text("Accept all")')
@@ -163,6 +219,10 @@ async def reddit_login(username: str, password: str, session=None):
                 await browser.close()
                 return False, None
 
+        # 🔹 Salvăm cookie-urile pentru sesiuni viitoare
+        await _save_cookies(context)
+        logger.info(f"⚠️ {Fore.BLUE}Cookie-urile sunt salvate din nou.{Style.RESET_ALL}")
+                
         cookies = await context.cookies()
         await browser.close()
 

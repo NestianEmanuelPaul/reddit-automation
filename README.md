@@ -3,6 +3,7 @@
 ## 📌 Descriere
 Acest proiect este un **orchestrator automatizat pentru Reddit**, care:
 - Se autentifică pe Reddit folosind **Playwright** și proxy-uri SOCKS5.
+- Integrare completă rezolvare hCaptcha – funcția e apelată în fluxul de login.
 - Monitorizează conexiunea la internet și starea sesiunii, cu **relogin automat**.
 - Colectează și îmbogățește date despre utilizatori și subreddit-uri.
 - Filtrează cohorta de utilizatori și generează sugestii folosind un modul AI.
@@ -14,6 +15,7 @@ Acest proiect este un **orchestrator automatizat pentru Reddit**, care:
 
 ### 🔹 Login și sesiuni
 - **Login prin Playwright + SOCKS5** (testat și funcțional).
+- Reutilizarea cookie-urilor intre sesiuni.
 - Rotație automată a proxy-urilor SOCKS5 pentru scraping (`itertools.cycle`).
 - Fallback la sesiune fără proxy dacă niciun SOCKS5 nu este valid.
 - Citirea credențialelor din `.env` (fără hardcodare în cod).
@@ -122,10 +124,6 @@ POST /suggest – generează sugestii AI pentru un utilizator.
 📌 Ce nu este încă implementat
 Login HTTP + fallback SOCKS5 – discutat, dar neimplementat.
 
-Integrare completă rezolvare hCaptcha – funcția există, dar nu e apelată în fluxul de login.
-
-Reutilizarea cookie-urilor – funcțiile există, dar nu sunt integrate.
-
 Mutarea completă pe structura modulară propusă – unele endpoint-uri sunt încă în main.py.
 
 Testare automată – nu există teste unitare/integration.
@@ -136,7 +134,7 @@ Documentație tehnică detaliată – acest README este primul pas.
 ⏳ Estimare timp pe sarcini
 
 Sarcină ---> Descriere ---> Ore estimate
-1. Implementare login cu Playwright + SOCKS5 ---> Scriere script login, integrare proxy-uri, testare funcțională ---> 7h
+1. Implementare login cu Playwright + SOCKS5 ---> Scriere script login, integrare proxy-uri, reutilizarea cookie-urilor între sesiuni, rezolvare Captcha, testare funcțională ---> 7h
 2. Gestionare rotație proxy și fallback ---> Implementare itertools.cycle, verificare proxy-uri, fallback la conexiune directă ---> 3h
 3. Monitorizare conexiune + relogin automat ---> Verificare periodică internet, status login, reconectare automată ---> 4h
 4. Integrare alerte Telegram ---> Configurare bot, trimitere mesaje la erori/relogin ---> 2h
