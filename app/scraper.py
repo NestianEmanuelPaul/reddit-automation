@@ -5,9 +5,13 @@ from app.services.parsing_service import get_recent_users
 from app.services.storage_service import upsert_username_list
 from app.utils.logger import logger
 # from settings import REDDIT_USER, REDDIT_PASS, HF_API_KEY
+import os
+from dotenv import load_dotenv
 
-USERNAME = "daniellikescoffee123"
-PASSWORD = "RNeixv617fjv6nJ*Yfc+q3k!3R"
+load_dotenv()
+
+USERNAME = os.getenv("REDDIT_USER")
+PASSWORD = os.getenv("REDDIT_PASS")
 
 async def main():
     print("[INFO] Pornim procesul de login...")

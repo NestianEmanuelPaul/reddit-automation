@@ -1,4 +1,4 @@
-from app.ai_client import generate_message
+from ai_client import generate_message
 import random
 
 def simulate_user_analysis(username: str, comments: str):

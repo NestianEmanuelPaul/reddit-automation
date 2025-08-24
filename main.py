@@ -2,7 +2,7 @@ import threading
 import time
 from datetime import datetime
 import requests
-from fastapi import FastAPI, APIRouter, HTTPException
+from fastapi import FastAPI, HTTPException
 from contextlib import asynccontextmanager
 import uvicorn
 import asyncio
@@ -12,8 +12,7 @@ import sys
 from app.routers import health, metrics, test_flow
 from app.api import endpoints
 from app.utils.logger import logger
-from app.services.scrape_service import scrape_user_profile
-from orchestrator import run_orchestration
+from app.orchestration.orchestrator import run_orchestration
 from app.scraper import collect_new_users, enrich_with_activity
 from app.filter import filter_online_users, filter_all_users
 from app.suggest import SuggestRequest, SuggestResponse, suggest_for_user

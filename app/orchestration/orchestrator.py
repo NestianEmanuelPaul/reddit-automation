@@ -6,17 +6,20 @@ from app.services.scrape_service import scrape_user_profile, scrape_subreddit_ab
 from app.services.storage_service import upsert_username_list, upsert_subreddit_info
 from app.utils.logger import logger
 from app.db.database import init_db
-from app.ai_client import generate_message
 from app.utils.proxy_manager import get_next_working_proxy, proxies_list
 import itertools
 import httpx
-from colorama import init, Fore, Style
+import os
+from dotenv import load_dotenv
+from colorama import Fore, Style
+
+load_dotenv()
 
 BASE_DIR = Path(__file__).resolve().parent
 CONFIG_FILE = BASE_DIR / "config.json"
 
-USERNAME = "daniellikescoffee123"
-PASSWORD = "RNeixv617fjv6nJ*Yfc+q3k!3R"
+USERNAME = os.getenv("REDDIT_USER")
+PASSWORD = os.getenv("REDDIT_PASS")
 
 async def login_and_get_cookies(proxy=None):
     """Face login și returnează cookies + headers, cu sau fără proxy."""

@@ -2,11 +2,9 @@
 import os
 import json
 import asyncio
-from typing import Tuple, Optional
 import requests
 from playwright.async_api import async_playwright, BrowserContext, Page
 from app.utils.logger import logger
-from app.utils.http_client import async_client
 
 CAPSOLVER_API_KEY = os.getenv("CAPSOLVER_API_KEY", "CAP-CHANGE-ME")
 LOGIN_URL = "https://www.reddit.com/login/?dest=https%3A%2F%2Fwww.reddit.com%2F"
