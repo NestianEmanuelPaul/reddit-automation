@@ -121,7 +121,7 @@ async def _try_submit_login(page: Page) -> None:
     await page.press('input[name="password"]', "Enter")
 
 # ---------------- Main login ----------------
-async def reddit_login(username: str, password: str):
+async def reddit_login(username: str, password: str, session=None):
     async with async_playwright() as p:
         browser = await p.chromium.launch(headless=False, slow_mo=100)
         context = await browser.new_context()
@@ -157,7 +157,6 @@ async def reddit_login(username: str, password: str):
             logger.info("✅ Login reușit (selector link profil găsit)")
         except:
             try:
-                # Un alt posibil indicator: meniul de utilizator
                 await page.wait_for_selector("header img[alt*='Avatar']", timeout=5000)
                 logger.info("✅ Login reușit (avatar găsit)")
             except:
@@ -169,8 +168,20 @@ async def reddit_login(username: str, password: str):
         cookies = await context.cookies()
         await browser.close()
 
-        # Inițializează un AsyncClient cu cookie-urile preluate
-        from httpx import AsyncClient
-        session = AsyncClient(cookies={c['name']: c['value'] for c in cookies})
+        # Dacă nu avem sesiune primită, creăm una nouă
+        if session is None:
+            from httpx import AsyncClient
+            session = AsyncClient()
+
+        # Adaugă cookie-urile în sesiunea existentă
+        for c in cookies:
+            session.cookies.set(
+                c['name'],
+                c['value'],
+                domain=c.get('domain'),
+                path=c.get('path')
+            )
+
         return True, session
+
 

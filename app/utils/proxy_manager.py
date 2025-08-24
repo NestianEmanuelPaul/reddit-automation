@@ -3,17 +3,26 @@ import httpx
 
 # lista de proxy-uri (poți pune mai multe)
 proxies_list = [
-    "http://user:pass@123.45.67.89:8080",
-    "http://98.76.54.32:3128",
-    "https://203.0.113.45:443",
-    "socks5://user:pass@198.51.100.23:1080"
+    "socks5h://aepodqcp:rsbwdel9hpcq@136.0.207.84:6661",
+    "socks5h://aepodqcp:rsbwdel9hpcq@216.10.27.159:6837"
 ]
 
 
 # Rotează proxy-urile la infinit
 proxy_cycle = itertools.cycle(proxies_list)
 
-async def get_next_working_proxy(test_url="https://httpbin.org/ip", timeout=5):
+async def get_next_working_proxy(start_proxy=None, test_url="https://httpbin.org/ip", timeout=5):
+    # dacă ai primit un start_proxy, începi cu el
+    if start_proxy:
+        try:
+            async with httpx.AsyncClient(proxies={"http://": start_proxy, "https://": start_proxy}, timeout=timeout) as client:
+                r = await client.get(test_url)
+                if r.status_code == 200:
+                    return start_proxy
+        except Exception:
+            pass
+
+    # dacă nu merge sau nu ai primit, rotești lista
     for _ in range(len(proxies_list)):
         proxy = next(proxy_cycle)
         try:
@@ -23,5 +32,6 @@ async def get_next_working_proxy(test_url="https://httpbin.org/ip", timeout=5):
                     return proxy
         except Exception:
             continue
-    return None  # dacă niciun proxy nu merge
+    return None
+
 

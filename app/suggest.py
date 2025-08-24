@@ -14,7 +14,7 @@ init(autoreset=True)
 
 # Încarcă mesaje deja trimise
 if os.path.exists(SUGGEST_LOG_FILE):
-    with open(SUGGEST_LOG_FILE) as f:
+    with open(SUGGEST_LOG_FILE, encoding="utf-8") as f:
         for line in f:
             sent_ids.add(line.strip().split("|")[0])
 

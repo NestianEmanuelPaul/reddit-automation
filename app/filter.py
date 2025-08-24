@@ -8,7 +8,7 @@ from datetime import datetime, timedelta
 r = redis.Redis(host='localhost', port=6379, decode_responses=True)
 
 REDIS_KEY_PREFIX = "contacted_user:"  # prefix pentru a evita coliziuni
-TTL_24H = 300  # secunde
+TTL_24H = 86400  # 24 ore în secunde
 
 def filter_online_users(user_dict, max_users=20):
     """
