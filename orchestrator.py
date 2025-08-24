@@ -65,6 +65,8 @@ async def create_sessions_with_proxies(cookies, headers):
         client.headers.update(headers)
         setattr(client, "proxy_url", working)
         sessions.append(client)
+        logger.info(f"✅ {Fore.GREEN}Sesiune adăugată pentru proxy: {working}{Style.RESET_ALL}")
+
 
     if not sessions:
         logger.warning("⚠️ Niciun proxy funcțional — folosesc o sesiune fără proxy pentru scraping.")
@@ -73,6 +75,7 @@ async def create_sessions_with_proxies(cookies, headers):
         client.headers.update(headers)
         setattr(client, "proxy_url", None)
         sessions.append(client)
+        logger.info(f"✅ {Fore.GREEN}Sesiune adăugată fără proxy{Style.RESET_ALL}")
 
     return itertools.cycle(sessions)  # rotație (măcar 1 element)
 
