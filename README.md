@@ -94,6 +94,8 @@ python -m venv .venv
 source .venv/bin/activate   # Linux/Mac
 .venv\Scripts\activate      # Windows
 
+Python 3.13 instalat
+
 pip install -r requirements.txt
 
 3. Configurare .env
@@ -139,8 +141,9 @@ Rulează:
 bash
 docker compose up -d
 
+***
 
-Pornire server FastAPI
+Pornire server FastAPI, asa se porneste proiectul pentru testare:
 
 uvicorn main:app --reload
 
@@ -148,6 +151,10 @@ Serverul va fi disponibil la: http://127.0.0.1:8000
 
 Endpoint-uri disponibile
 GET / – răspuns simplu de test.
+
+GET /health – uptime și status aplicație
+
+GET /metrics – contori de activitate
 
 POST /run-orchestration – rulează orchestratorul manual.
 
