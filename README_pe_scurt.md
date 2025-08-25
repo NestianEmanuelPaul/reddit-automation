@@ -7,7 +7,7 @@ Python 3.10+ instalat
 Fișier .env cu datele de configurare (vezi mai jos)
 
 2️⃣ Configurare .env
-Creează un fișier .env în rădăcina proiectului cu:
+Creează un fișier .env (sau foloseste-l pe al meu) în rădăcina proiectului cu:
 
 env
 REDDIT_USER=utilizatorul_tau
@@ -15,6 +15,7 @@ REDDIT_PASS=parola_ta
 CAPSOLVER_API_KEY=cheia_ta_capsolver
 TELEGRAM_BOT_TOKEN=tokenul_botului
 TELEGRAM_CHAT_ID=id_chat
+
 3️⃣ Pornire servicii din Docker
 În folderul proiectului:
 

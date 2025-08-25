@@ -108,7 +108,7 @@ TELEGRAM_BOT_TOKEN=tokenul_botului
 TELEGRAM_CHAT_ID=id_chat
 
 4. Configurare config.json
-Fișierul config.json conține lista de utilizatori și subreddit-uri țintă:
+Fișierul config.json ("reddit-automation\app\orchestration\config.json") conține lista de utilizatori și subreddit-uri țintă:
 
 {
   "users": ["user1", "user2"],
