@@ -22,6 +22,9 @@ Acest proiect este un **orchestrator automatizat pentru Reddit**, care:
 
 ### 🔹 Monitorizare și reconectare
 - Verificare periodică a conexiunii la internet.
+- endpoint-uri : /metrics si /health la : http://127.0.0.1:8000/docs
+,http://127.0.0.1:8000/metrics
+si, http://127.0.0.1:8000/health, unde se afiseaza informatiile : pentru metrics - returnează niște valori numerice (contori) despre activitatea aplicației: logări, erori, utilizatori procesați, mesaje generate, pentru health - iti spune dacă aplicația este „vie” și cât timp a trecut de când a fost pornită (uptime_seconds).
 - Verificare stării de login.
 - Relogin automat dacă apare o problemă.
 - Alerte Telegram la reconectare sau erori.
@@ -108,6 +111,28 @@ Fișierul config.json conține lista de utilizatori și subreddit-uri țintă:
 }
 
 ▶️ Rulare
+
+Pași pentru a avea serviciile în Docker Desktop și a le porni
+1️⃣ Instalarea Docker Desktop
+Descarcă și instalează Docker Desktop de aici: https://www.docker.com/products/docker-desktop/
+
+După instalare, verifică în terminal:
+
+bash
+docker --version
+docker compose version
+2️⃣ Pregătirea fișierului docker-compose.yml
+Proiectul are deja un fișier docker-compose.yml, acesta conține definițiile pentru toate serviciile necesare (Redis, Kafka, Zookeeper etc.).
+
+3️⃣ Cum se rulează fișierul .yml
+Deschide un terminal în folderul unde se află docker-compose.yml.
+
+Rulează:
+
+bash
+docker compose up -d
+
+
 Pornire server FastAPI
 
 uvicorn main:app --reload
