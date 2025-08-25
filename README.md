@@ -22,9 +22,9 @@ Acest proiect este un **orchestrator automatizat pentru Reddit**, care:
 
 ### 🔹 Monitorizare și reconectare
 - Verificare periodică a conexiunii la internet.
-- endpoint-uri : /metrics si /health la : http://127.0.0.1:8000/docs
+- endpoint-uri : /metrics si /health la : http://127.0.0.1:8000/docs - aici sunt toate endpoint-urile
 ,http://127.0.0.1:8000/metrics
-si, http://127.0.0.1:8000/health, unde se afiseaza informatiile : pentru metrics - returnează niște valori numerice (contori) despre activitatea aplicației: logări, erori, utilizatori procesați, mesaje generate, pentru health - iti spune dacă aplicația este „vie” și cât timp a trecut de când a fost pornită (uptime_seconds).
+si http://127.0.0.1:8000/health, unde se afiseaza informatiile : pentru metrics - returnează niște valori numerice (contori) despre activitatea aplicației: logări, erori, utilizatori procesați, mesaje generate, pentru health - iti spune dacă aplicația este „vie” și cât timp a trecut de când a fost pornită (uptime_seconds).
 - Verificare stării de login.
 - Relogin automat dacă apare o problemă.
 - Alerte Telegram la reconectare sau erori.

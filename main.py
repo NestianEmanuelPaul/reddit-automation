@@ -168,6 +168,11 @@ async def lifespan(app: FastAPI):
 
 app = FastAPI(lifespan=lifespan)
 
+app.include_router(health.router)
+app.include_router(metrics.router)
+app.include_router(test_flow.router)
+app.include_router(endpoints.router)
+
 @app.get("/")
 async def root():
     return {"message": "Salut!"}
