@@ -1,25 +1,36 @@
+# =========================
+# Importuri necesare
+# =========================
 import os
-import hashlib
-import requests
-import random
+import hashlib  # pentru generarea unui ID unic pe baza user_id + mesaj
+import requests  # pentru apeluri HTTP către API-ul Mistral
+import random    # pentru generarea scorurilor randomizate
 from typing import Dict, List
-from pydantic import BaseModel
-from app.utils.logger import logger
-from colorama import init, Fore, Style
+from pydantic import BaseModel  # pentru validarea datelor de intrare/ieșire
+from app.utils.logger import logger  # logger-ul centralizat al aplicației
+from colorama import init, Fore, Style  # pentru colorarea logurilor în consolă
 import logging
+import time  # pentru delay între retry-uri
 
-SUGGEST_LOG_FILE = "sent_messages.log"
-sent_ids = set()
-init(autoreset=True)
+# =========================
+# Configurare log și fișier de mesaje trimise
+# =========================
+SUGGEST_LOG_FILE = "sent_messages.log"  # fișier în care se salvează mesajele trimise
+sent_ids = set()  # set cu ID-uri unice ale mesajelor deja trimise
+init(autoreset=True)  # reset automat al culorilor în terminal
 
-# Încarcă mesaje deja trimise
+# Dacă există fișierul de log, încarcă ID-urile mesajelor deja trimise
 if os.path.exists(SUGGEST_LOG_FILE):
     with open(SUGGEST_LOG_FILE, encoding="utf-8") as f:
         for line in f:
             sent_ids.add(line.strip().split("|")[0])
 
+# URL-ul spațiului Mistral (poate fi setat din variabile de mediu)
 SPACE_URL = os.getenv("SPACE_URL", "").rstrip("/")
 
+# =========================
+# Modele Pydantic pentru request/response
+# =========================
 class SuggestRequest(BaseModel):
     user_id: str
     features: Dict
@@ -33,44 +44,40 @@ class SuggestResponse(BaseModel):
     user_id: str
     suggestions: List[Suggestion]
 
+# =========================
+# Funcție: unique_id
+# =========================
 def unique_id(user_id, message):
+    """
+    Creează un hash SHA-256 unic pentru combinația user_id + mesaj.
+    Folosit pentru a evita trimiterea aceluiași mesaj de mai multe ori.
+    """
     return hashlib.sha256(f"{user_id}:{message}".encode()).hexdigest()
 
-logger = logging.getLogger(__name__)
-
-# pentru apel direct mistral
-API_URL = "https://api.mistral.ai/v1/chat/completions"
-HF_TOKEN = "ALiftd20j0mwwGd2LwFl4AJmawufa61B"
-headers = {
-    "Authorization": f"Bearer {HF_TOKEN}"
-}
-payload = {
-    "model": "mistral-large-latest",
-    "messages": [
-        {"role": "user", "content": "Salut! Ce poți face?"}
-    ]
-}
-
-import time
-import requests
-import logging
-
+# =========================
+# Configurare API Mistral
+# =========================
 logger = logging.getLogger(__name__)
 
 API_URL = "https://api.mistral.ai/v1/chat/completions"
-API_KEY = "ALiftd20j0mwwGd2LwFl4AJmawufa61B"
+API_KEY = "ALiftd20j0mwwGd2LwFl4AJmawufa61B"  # cheia API (ar trebui stocată securizat)
 
 HEADERS = {
     "Authorization": f"Bearer {API_KEY}"
 }
 
+# =========================
+# Funcție: call_mistral_space
+# =========================
 def call_mistral_space(history, features, max_retries=3, backoff_factor=2):
     """
     Trimite promptul către API-ul Mistral și primește mesaje generate.
-    history  -> istoricul conversației (string sau listă)
-    features -> trăsături suplimentare (dict)
+    - history: istoricul conversației (listă de string-uri)
+    - features: trăsături suplimentare despre utilizator (dict)
+    - max_retries: numărul maxim de reîncercări în caz de eroare
+    - backoff_factor: factor de multiplicare a delay-ului între reîncercări
     """
-    # Construim promptul
+    # Construim promptul pentru model
     prompt = (
         f"Generează 2 mesaje scurte și prietenoase "
         f"bazate pe istoricul: {history} și trăsăturile: {features}."
@@ -92,13 +99,14 @@ def call_mistral_space(history, features, max_retries=3, backoff_factor=2):
             logger.info(f"Status code: {r.status_code}")
 
             if r.status_code == 200:
+                # Încearcă să parseze răspunsul JSON
                 try:
                     data = r.json()
                 except ValueError:
                     logger.error(f"Răspuns non‑JSON: {r.text!r}")
                     return []
 
-                # Extragem conținutul mesajului
+                # Extrage textul generat de model
                 try:
                     reply = data["choices"][0]["message"]["content"]
                 except (KeyError, IndexError) as e:
@@ -107,16 +115,18 @@ def call_mistral_space(history, features, max_retries=3, backoff_factor=2):
 
                 logger.info(f"Raw text: {reply}")
 
-                # Împărțim în mesaje individuale
+                # Împarte textul în mesaje individuale
                 msgs = []
                 for line in reply.splitlines():
                     line = line.strip()
                     if line.startswith("*\"") and line.endswith("\"*"):
                         msgs.append(line.strip("*").strip('"'))
+
                 logger.info(f"Mesaje extrase: {msgs}")
-                return msgs[:2]
+                return msgs[:2]  # returnează doar primele 2 mesaje
 
             elif r.status_code == 429:
+                # Too Many Requests → retry cu backoff
                 logger.warning(f"Capacitate depășită. Reîncerc în {delay}s (încercarea {attempt}/{max_retries})")
                 time.sleep(delay)
                 delay *= backoff_factor
@@ -131,6 +141,52 @@ def call_mistral_space(history, features, max_retries=3, backoff_factor=2):
 
     logger.error("Număr maxim de reîncercări atins fără succes.")
     return []
+
+# =========================
+# Funcție: suggest_for_user
+# =========================
+def suggest_for_user(user_id: str, features: Dict, history: List[str]) -> SuggestResponse:
+    """
+    Trimite datele despre user către modelul Mistral și returnează sugestiile.
+    - Loghează fiecare pas cu culori pentru lizibilitate.
+    - Evită trimiterea de mesaje duplicate (verifică în sent_ids).
+    """
+    try:
+        # === Log request către model ===
+        logger.info(f"{Fore.BLUE}[AI] Trimit către model pentru {user_id}:{Style.RESET_ALL}")
+        logger.info(f"{Fore.BLUE}Features: {features}{Style.RESET_ALL}")
+        logger.info(f"{Fore.BLUE}History: {history}{Style.RESET_ALL}")
+
+        # === Apel model ===
+        messages = call_mistral_space(history, features)
+
+        # === Log răspuns brut ===
+        logger.info(f"{Fore.GREEN}[MODEL RAW REPLY pentru {user_id}]{Style.RESET_ALL} {messages}")
+
+        suggestions = []
+        for m in messages:
+            mid = unique_id(user_id, m)
+            score = round(random.uniform(0.8, 0.95), 2)  # scor random între 0.8 și 0.95
+
+            # Log sugestie generată
+            logger.info(f"{Fore.CYAN}[MODEL→{user_id}]{Style.RESET_ALL} {m} (score={score})")
+
+            # Dacă mesajul nu a mai fost trimis, îl salvăm în fișier și în memorie
+            if mid not in sent_ids:
+                with open(SUGGEST_LOG_FILE, "a", encoding="utf-8") as f:
+                    f.write(f"{mid}|{user_id}|{m}\n")
+                sent_ids.add(mid)
+                logger.info(f"{Fore.YELLOW}[SENT][{user_id}]{Style.RESET_ALL} {m} (score={score})")
+
+            suggestions.append(Suggestion(message=m, score=score))
+
+        return SuggestResponse(user_id=user_id, suggestions=suggestions)
+
+    except Exception as e:
+        logger.error(f"{Fore.RED}[AI] Eroare la generarea sugestiilor pentru {user_id}: {e}{Style.RESET_ALL}")
+        return SuggestResponse(user_id=user_id, suggestions=[])
+
+
 
 """ def call_mistral_space(history, features):
     Trimite promptul către Space-ul AI și primește mesaje.
@@ -165,47 +221,3 @@ def call_mistral_space(history, features, max_retries=3, backoff_factor=2):
             logger.info(f"[SENT][{user_id}] {m} (score={score}) !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
         suggestions.append(Suggestion(message=m, score=score))
     return SuggestResponse(user_id=user_id, suggestions=suggestions) """
-
-from colorama import Fore, Style
-import random
-
-def suggest_for_user(user_id: str, features: Dict, history: List[str]) -> SuggestResponse:
-    """
-    Trimite datele despre user către modelul Mistral Space și returnează sugestiile.
-    Loghează fiecare pas cu culori pentru lizibilitate.
-    """
-    try:
-        # === Log request către model ===
-        logger.info(f"{Fore.BLUE}[AI] Trimit către model pentru {user_id}:{Style.RESET_ALL}")
-        logger.info(f"{Fore.BLUE}Features: {features}{Style.RESET_ALL}")
-        logger.info(f"{Fore.BLUE}History: {history}{Style.RESET_ALL}")
-
-        # === Apel model ===
-        messages = call_mistral_space(history, features)
-
-        # === Log răspuns brut ===
-        logger.info(f"{Fore.GREEN}[MODEL RAW REPLY pentru {user_id}]{Style.RESET_ALL} {messages}")
-
-        suggestions = []
-        for m in messages:
-            mid = unique_id(user_id, m)
-            score = round(random.uniform(0.8, 0.95), 2)
-
-            # Log sugestie generată
-            logger.info(f"{Fore.CYAN}[MODEL→{user_id}]{Style.RESET_ALL} {m} (score={score})")
-
-            # Dacă nu a mai fost trimisă, o salvăm
-            if mid not in sent_ids:
-                with open(SUGGEST_LOG_FILE, "a", encoding="utf-8") as f:
-                    f.write(f"{mid}|{user_id}|{m}\n")
-                sent_ids.add(mid)
-                logger.info(f"{Fore.YELLOW}[SENT][{user_id}]{Style.RESET_ALL} {m} (score={score})")
-
-            suggestions.append(Suggestion(message=m, score=score))
-
-        return SuggestResponse(user_id=user_id, suggestions=suggestions)
-
-    except Exception as e:
-        logger.error(f"{Fore.RED}[AI] Eroare la generarea sugestiilor pentru {user_id}: {e}{Style.RESET_ALL}")
-        return SuggestResponse(user_id=user_id, suggestions=[])
-
