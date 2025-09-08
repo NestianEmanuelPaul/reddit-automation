@@ -6,8 +6,8 @@ from dotenv import load_dotenv
 # Încărcăm variabilele din .env
 load_dotenv()
 
-TOKEN = "8379653048:AAHfC4DasoTYiUsfdNa3CtWorRVKw0wMqQc"
-CHAT_ID = "5937988338"
+TOKEN = os.getenv("TELEGRAM_TOKEN")
+CHAT_ID = os.getenv("TELEGRAM_CHAT_ID")
 
 # Mesajul de test
 message = "Salut 👋! Acesta este un mesaj de test trimis prin Python."
