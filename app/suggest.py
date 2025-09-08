@@ -161,7 +161,7 @@ def suggest_for_user(user_id: str, features: Dict, history: List[str]) -> Sugges
         messages = call_mistral_space(history, features)
 
         # === Log răspuns brut ===
-        logger.info(f"{Fore.GREEN}[MODEL RAW REPLY pentru {user_id}]{Style.RESET_ALL} {messages}")
+        logger.info(f"{Fore.GREEN}[MODEL RAW REPLY pentru {user_id}] {Fore.YELLOW}{messages}{Style.RESET_ALL}")
 
         suggestions = []
         for m in messages:

@@ -6,11 +6,11 @@ from playwright.sync_api import Page, BrowserContext
 from app.crypto_utils import encrypt_data, decrypt_data
 # from settings import REDDIT_USER, REDDIT_PASS, CAPSOLVER_API_KEY
 
-CAPSOLVER_API_KEY = "CAP-1BC9D110E8141475BB3809D4B6C6753B"
+CAPSOLVER_API_KEY = os.getenv("CAPSOLVER_API_KEY")
 LOGIN_URL = "https://www.reddit.com/login/?dest=https%3A%2F%2Fwww.reddit.com%2F"
 
-USERNAME = "daniellikescoffee123"
-PASSWORD = "RNeixv617fjv6nJ*Yfc+q3k!3R"
+USERNAME = os.getenv("REDDIT_USER")
+PASSWORD = os.getenv("REDDIT_PASS")
 COOKIES_FILE = "cookies.json"
 SESSION_FILE = "session_data.json"
 
@@ -18,7 +18,7 @@ def is_session_valid(session):
     return session and session.get("expires_at", 0) > time.time()
 
 def login():
-    # 🔹 Simulare login real — înlocuiește cu API-ul tău
+    # 🔹 Simulare login real — înlocuiește cu API-ul
     print("[INFO] Autentificare...")
     token = "nou_token"
     cookies = {"session_id": "abc123"}

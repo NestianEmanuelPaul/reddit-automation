@@ -202,11 +202,11 @@ async def reddit_login(username: str, password: str, session=None):
         await page.goto("https://www.reddit.com/login", timeout=60000)
 
         # Rezolvă hCaptcha dacă apare
-        captcha_resolved = await _check_and_solve_captcha(page)
-        if captcha_resolved:
-            logger.info(f"✅ {Fore.BLUE}hCaptcha rezolvat automat.{Style.RESET_ALL}")
-        else:
-            logger.info(f"ℹ️ {Fore.BLUE}Nu a apărut hCaptcha la login.{Style.RESET_ALL}")
+        # captcha_resolved = await _check_and_solve_captcha(page)
+        # if captcha_resolved:
+            # logger.info(f"✅ {Fore.BLUE}hCaptcha rezolvat automat.{Style.RESET_ALL}")
+        # else:
+            # logger.info(f"ℹ️ {Fore.BLUE}Nu a apărut hCaptcha la login.{Style.RESET_ALL}")
 
         # Acceptă cookie banner dacă apare
         try:

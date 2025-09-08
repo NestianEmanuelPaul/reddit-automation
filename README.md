@@ -147,6 +147,11 @@ Pornire server FastAPI, asa se porneste proiectul pentru testare:
 
 uvicorn main:app --reload
 
+sau pentru celelalte doua fluxuri paralele :
+- python -m app.orchestration.orchestrator -> ia toti userii si subreddit-urile din config.json si face scraping pentru userii si subrediturile respective, userii ii salveaza in bd. deasemenea foloseste login complet cu Playwright
+- python -m app.scraper -> va folosi login complet și scraping cu Playwright, extragem utilizatori recenți din subreddit-ul AskReddit (max 50), apoi ii salveaza in bd
+
+
 Serverul va fi disponibil la: http://127.0.0.1:8000
 
 Endpoint-uri disponibile
@@ -161,7 +166,7 @@ POST /run-orchestration – rulează orchestratorul manual.
 POST /suggest – generează sugestii AI pentru un utilizator.
 
 📌 Ce nu este încă implementat
-Login HTTP + fallback SOCKS5 – discutat, dar neimplementat.
+Login HTTP + fallback SOCKS5.
 
 Mutarea completă pe structura modulară propusă – unele endpoint-uri sunt încă în main.py.
 
